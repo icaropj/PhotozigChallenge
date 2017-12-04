@@ -3,15 +3,20 @@ package icaro.com.br.photozigchallenge.fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,15 +25,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import icaro.com.br.photozigchallenge.BuildConfig;
 import icaro.com.br.photozigchallenge.R;
 import icaro.com.br.photozigchallenge.adapter.AssetAdapter;
 import icaro.com.br.photozigchallenge.base.BaseFragment;
+import icaro.com.br.photozigchallenge.event.DownloadEvent;
+import icaro.com.br.photozigchallenge.event.EventBusSingleton;
 import icaro.com.br.photozigchallenge.listener.AssetListener;
 import icaro.com.br.photozigchallenge.model.Asset;
 import icaro.com.br.photozigchallenge.model.AssetsWrapper;
@@ -54,9 +68,14 @@ public class AssetListFragment extends BaseFragment implements AssetListener {
     @BindView(R.id.fragment_asset_list_swiperefresh)
     SwipeRefreshLayout mSwipeRefreshLayout;
 
+    @BindView(R.id.coordinatorLayout)
+    CoordinatorLayout mCoordinatorLayout;
+
     private AssetAdapter mAdapter;
     private List<Asset> mAssets = new ArrayList<>();
     private AssetsWrapper mAssetsWrapper;
+
+    private EventBus bus;
 
     public AssetListFragment() {
     }
@@ -91,6 +110,11 @@ public class AssetListFragment extends BaseFragment implements AssetListener {
                 fetchAssets();
             }
         });
+
+        bus = EventBusSingleton.getInstance().getBus();
+        if(!bus.isRegistered(this)){
+            bus.register(this);
+        }
 
         return view;
     }
@@ -172,6 +196,33 @@ public class AssetListFragment extends BaseFragment implements AssetListener {
         intent.putExtra(Constants.FILE_NAME, fileName);
         intent.putExtra(Constants.ASSETS_PATH_EXTRA, mAssetsWrapper.getAssetsLocation() + "/" + fileName);
         mContext.startService(intent);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void downloadFinished(DownloadEvent event){
+        final File file = event.getFile();
+        MessageUtils.snackbar(mCoordinatorLayout, "Salvo em " + file.getParent() ,
+                "Abrir", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String type = FileUtils.getMimeType(file);
+                try {
+                    Intent intent = new Intent();
+                    intent.setAction(Intent.ACTION_VIEW);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        Uri contentUri = FileProvider.getUriForFile(mContext,
+                                BuildConfig.APPLICATION_ID + ".FileProvider", file);
+                        intent.setDataAndType(contentUri, type);
+                    } else {
+                        intent.setDataAndType(Uri.fromFile(file), type);
+                    }
+                    startActivity(intent);
+                } catch (ActivityNotFoundException anfe) {
+                    Toast.makeText(getContext(), "No activity found to open this attachment.", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     private boolean checkPermission(){

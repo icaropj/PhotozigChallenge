@@ -136,7 +136,10 @@ public class AssetDetailFragment extends Fragment implements ExoPlayer.EventList
         this.mAsset = mAssets.get(mPosition);
 
         bus = EventBusSingleton.getInstance().getBus();
-        bus.register(this);
+
+        if(!bus.isRegistered(this)){
+            bus.register(this);
+        }
 
         initMediaSession();
 
