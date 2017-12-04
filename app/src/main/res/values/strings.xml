@@ -11,4 +11,5 @@
     <string name="downloaded_message">Download finalizado</string>
     <string name="download_title">Download</string>
     <string name="error_fetch">Houve um problema ao buscar os dados.</string>
+    <string name="already_downloaded">Download já relizado.</string>
 </resources>

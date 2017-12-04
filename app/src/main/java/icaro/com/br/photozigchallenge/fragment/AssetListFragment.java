@@ -153,7 +153,7 @@ public class AssetListFragment extends BaseFragment implements AssetListener {
             String audioPath = Environment.getExternalStoragePublicDirectory(downloadsDir).toString() + "/" + asset.getSg();
             String videoPath = Environment.getExternalStoragePublicDirectory(downloadsDir).toString() + "/" + asset.getBg();
             if(FileUtils.fileExist(videoPath) && FileUtils.fileExist(audioPath)){
-                MessageUtils.shortToast(mContext, "Download já relizado.");
+                MessageUtils.shortToast(mContext, getString(R.string.already_downloaded));
             }else{
                 if(!FileUtils.fileExist(videoPath)){
                     startDownload(asset.getBg());
@@ -174,9 +174,6 @@ public class AssetListFragment extends BaseFragment implements AssetListener {
         mContext.startService(intent);
     }
 
-    /**
-     * Permission
-     */
     private boolean checkPermission(){
         int result = ContextCompat.checkSelfPermission(mContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE);

@@ -1,7 +1,6 @@
 package icaro.com.br.photozigchallenge.fragment;
 
 
-import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,7 +15,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,7 +46,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -63,7 +60,6 @@ import icaro.com.br.photozigchallenge.service.DownloadService;
 import icaro.com.br.photozigchallenge.util.Constants;
 import icaro.com.br.photozigchallenge.util.FileUtils;
 import icaro.com.br.photozigchallenge.util.JsonUtils;
-import icaro.com.br.photozigchallenge.util.MessageUtils;
 
 public class AssetDetailFragment extends Fragment implements ExoPlayer.EventListener  {
 
@@ -84,16 +80,13 @@ public class AssetDetailFragment extends Fragment implements ExoPlayer.EventList
 
     private PlaybackStateCompat.Builder mStateBuilder;
     private MediaSessionCompat mMediaSession;
-    private NotificationManager mNotificationManager;
 
     private Asset mAsset;
     private Context mContext;
 
     private EventBus bus;
 
-    private static final String CHANNEL_ID = "media_playback_channel";
     private String audioPath, videoPath;
-    private String urlAssets;
     private int mPosition;
     private List<Asset> mAssets;
     private AssetsWrapper mWrapper;
@@ -260,7 +253,7 @@ public class AssetDetailFragment extends Fragment implements ExoPlayer.EventList
             mExoAudio.addListener(this);
 
             Uri audioUri = Uri.parse(audioPath);
-            String userAgent = Util.getUserAgent(mContext, "ClassicalMusicQuiz");
+            String userAgent = Util.getUserAgent(mContext, getString(R.string.app_name));
             MediaSource mediaSourceAudio = new ExtractorMediaSource(audioUri, new DefaultDataSourceFactory(
                     mContext, userAgent), new DefaultExtractorsFactory(), null, null);
 
@@ -332,9 +325,6 @@ public class AssetDetailFragment extends Fragment implements ExoPlayer.EventList
             mExoAudio.release();
             mExoAudio = null;
         }
-        if(mNotificationManager != null){
-            mNotificationManager.cancelAll();
-        }
     }
 
     @Override
@@ -378,17 +368,6 @@ public class AssetDetailFragment extends Fragment implements ExoPlayer.EventList
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
-    }
-
-    public class MediaReceiver extends BroadcastReceiver {
-
-        public MediaReceiver() {
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            MediaButtonReceiver.handleIntent(mMediaSession, intent);
-        }
     }
 
     @Override

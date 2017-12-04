@@ -51,7 +51,7 @@ public class DownloadService extends IntentService {
         String path = intent.getStringExtra(Constants.ASSETS_PATH_EXTRA);
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setContentTitle(getString(R.string.download_title))
                 .setContentText(getString(R.string.download_message) + " " + fileName)
                 .setAutoCancel(true);
@@ -127,6 +127,7 @@ public class DownloadService extends IntentService {
         mNotificationManager.cancel(0);
         mNotificationBuilder.setProgress(0, 0, false);
         mNotificationBuilder.setContentText(getString(R.string.downloaded_message));
+        mNotificationBuilder.setSmallIcon(android.R.drawable.stat_sys_download_done);
         Notification notification = mNotificationBuilder.build();
         mNotificationManager.notify(0, notification);
 
