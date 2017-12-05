@@ -53,7 +53,7 @@ Run this from your terminal, changing what's inside the quotes, to configure you
 
 2. Open Android Studio, click on *Open an existing Android Studio project* and select the project folder. Wait for the project to import.
 
-3. Create an emulator if you don't have one already, or enable ADB integration on Tools > Android > Enable ADB Integration and plugin your device.
+3. Create an emulator(Api 24) if you don't have one already, or enable ADB integration on Tools > Android > Enable ADB Integration and plugin your device.
 
 4. Run the project picking the device you chose on the previous step.
 
