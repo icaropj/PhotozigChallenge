@@ -1,4 +1,4 @@
-# PhotozigChallenge
+4# PhotozigChallenge
 Programming Android challenge
 
 This app shows a list of media files you can download and play.
@@ -16,7 +16,7 @@ Created in Android Studio 3.0.1.
 
 ## Target SDK Version 
 
-26
+24
 
 ## Min SDK Version
 
@@ -30,7 +30,7 @@ Download and install [Java Development Kit](http://www.oracle.com/technetwork/pt
 You can check your version with *java -version*
 
 ### Android
-Download and install [Android Studio](https://developer.android.com/studio/index.html?hl=pt-br) along with SDK 26.
+Download and install [Android Studio](https://developer.android.com/studio/index.html?hl=pt-br) along with SDK 24.
 
 ### Git
 Download and install [git](https://git-scm.com/).
