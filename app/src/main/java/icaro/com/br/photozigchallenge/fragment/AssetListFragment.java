@@ -116,6 +116,10 @@ public class AssetListFragment extends BaseFragment implements AssetListener {
             bus.register(this);
         }
 
+        if(!checkPermission()){
+            requestPermission();
+        }
+
         return view;
     }
 
@@ -202,27 +206,7 @@ public class AssetListFragment extends BaseFragment implements AssetListener {
     public void downloadFinished(DownloadEvent event){
         final File file = event.getFile();
         MessageUtils.snackbar(mCoordinatorLayout, "Salvo em " + file.getParent() ,
-                "Abrir", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String type = FileUtils.getMimeType(file);
-                try {
-                    Intent intent = new Intent();
-                    intent.setAction(Intent.ACTION_VIEW);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        Uri contentUri = FileProvider.getUriForFile(mContext,
-                                BuildConfig.APPLICATION_ID + ".FileProvider", file);
-                        intent.setDataAndType(contentUri, type);
-                    } else {
-                        intent.setDataAndType(Uri.fromFile(file), type);
-                    }
-                    startActivity(intent);
-                } catch (ActivityNotFoundException anfe) {
-                    Toast.makeText(getContext(), "No activity found to open this attachment.", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
+                "Abrir", null);
     }
 
     private boolean checkPermission(){
@@ -236,8 +220,21 @@ public class AssetListFragment extends BaseFragment implements AssetListener {
     }
 
     private void requestPermission(){
-        ActivityCompat.requestPermissions((Activity) mContext,
-                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},Constants.PERMISSION_REQUEST_CODE);
+        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},Constants.PERMISSION_REQUEST_CODE);
+    }
+
+    @Override
+
+    public void  onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case Constants.PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                } else {
+                    MessageUtils.shortToast(mContext, getString(R.string.permission_denied));
+                }
+                break;
+        }
     }
 
     @Override
@@ -255,6 +252,12 @@ public class AssetListFragment extends BaseFragment implements AssetListener {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        bus.unregister(this);
     }
 
     public interface OnFragmentInteractionListener {

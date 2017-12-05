@@ -1,10 +1,13 @@
 package icaro.com.br.photozigchallenge.fragment;
 
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +15,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -60,6 +64,7 @@ import icaro.com.br.photozigchallenge.service.DownloadService;
 import icaro.com.br.photozigchallenge.util.Constants;
 import icaro.com.br.photozigchallenge.util.FileUtils;
 import icaro.com.br.photozigchallenge.util.JsonUtils;
+import icaro.com.br.photozigchallenge.util.MessageUtils;
 
 public class AssetDetailFragment extends Fragment implements ExoPlayer.EventListener  {
 
@@ -176,20 +181,24 @@ public class AssetDetailFragment extends Fragment implements ExoPlayer.EventList
     }
 
     private void initMedia() {
-        String downloadsDir = Environment.DIRECTORY_DOWNLOADS;
-        audioPath = Environment.getExternalStoragePublicDirectory(downloadsDir).toString() + "/" + mAsset.getSg();
-        videoPath = Environment.getExternalStoragePublicDirectory(downloadsDir).toString() + "/" + mAsset.getBg();
-        if(FileUtils.fileExist(videoPath)){
-            setVideoView();
-            if(FileUtils.fileExist(this.audioPath)) hideProgressDialog();
+        if(checkPermission()) {
+            String downloadsDir = Environment.DIRECTORY_DOWNLOADS;
+            audioPath = Environment.getExternalStoragePublicDirectory(downloadsDir).toString() + "/" + mAsset.getSg();
+            videoPath = Environment.getExternalStoragePublicDirectory(downloadsDir).toString() + "/" + mAsset.getBg();
+            if(FileUtils.fileExist(videoPath)){
+                setVideoView();
+                if(FileUtils.fileExist(this.audioPath)) hideProgressDialog();
+            }else{
+                startDownload(mAsset.getBg());
+            }
+            if(FileUtils.fileExist(audioPath)){
+                initExo();
+                if(FileUtils.fileExist(this.videoPath)) hideProgressDialog();
+            }else{
+                startDownload(mAsset.getSg());
+            }
         }else{
-            startDownload(mAsset.getBg());
-        }
-        if(FileUtils.fileExist(audioPath)){
-            initExo();
-            if(FileUtils.fileExist(this.videoPath)) hideProgressDialog();
-        }else{
-            startDownload(mAsset.getSg());
+            requestPermission();
         }
     }
 
@@ -388,6 +397,34 @@ public class AssetDetailFragment extends Fragment implements ExoPlayer.EventList
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    private boolean checkPermission(){
+        int result = ContextCompat.checkSelfPermission(mContext,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (result == PackageManager.PERMISSION_GRANTED){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void requestPermission(){
+        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},Constants.PERMISSION_REQUEST_CODE);
+    }
+
+    @Override
+
+    public void  onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case Constants.PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    initMedia();
+                } else {
+                    MessageUtils.shortToast(mContext, getString(R.string.permission_denied));
+                }
+                break;
+        }
     }
 
     public interface OnFragmentInteractionListener {

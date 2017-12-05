@@ -12,4 +12,5 @@
     <string name="download_title">Download</string>
     <string name="error_fetch">Houve um problema ao buscar os dados.</string>
     <string name="already_downloaded">Download já relizado.</string>
+    <string name="permission_denied">Permissão necessária para download</string>
 </resources>
